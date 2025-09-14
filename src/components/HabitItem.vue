@@ -26,7 +26,7 @@
 
 <script setup>
 import { computed } from 'vue';
-import { useHabitStore } from '@/stores/habitStore.js';
+import { useHabitStore } from '@/habitStore.js';
 
 const props = defineProps({
   habit: Object,

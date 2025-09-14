@@ -1,57 +1,127 @@
 <template>
-  <div>
-    <div class="flex gap-3 mb-4 justify-center">
-      <button
-        @click="filter = 'all'"
-        class="px-3 py-1 rounded border cursor-pointer"
-        :class="{ 'bg-blue-600 text-white border-blue-600': filter === 'all', 'bg-white text-gray-700 border-gray-300 hover:bg-gray-200': filter !== 'all' }"
-        aria-label="Afișează toate obiceiurile"
-      >
-        Toate
-      </button>
-      <button
-        @click="filter = 'done'"
-        class="px-3 py-1 rounded border cursor-pointer"
-        :class="{ 'bg-blue-600 text-white border-blue-600': filter === 'done', 'bg-white text-gray-700 border-gray-300 hover:bg-gray-200': filter !== 'done' }"
-        aria-label="Afișează obiceiurile bifate azi"
-      >
-        Bifate azi
-      </button>
-      <button
-        @click="filter = 'not-done'"
-        class="px-3 py-1 rounded border cursor-pointer"
-        :class="{ 'bg-blue-600 text-white border-blue-600': filter === 'not-done', 'bg-white text-gray-700 border-gray-300 hover:bg-gray-200': filter !== 'not-done' }"
-        aria-label="Afișează obiceiurile nebifate azi"
-      >
-        Nebifate azi
-      </button>
-    </div>
+  <div class="space-y-6">
+    <h2 class="text-2xl font-bold tracking-tight text-gray-800 dark:text-gray-100">
+      Your Habits
+    </h2>
 
-    <HabitItem
-      v-for="habit in filteredHabits"
-      :key="habit.id"
-      :habit="habit"
-    />
-    <p v-if="filteredHabits.length === 0" class="text-gray-500 mt-4 text-center">
-      Nu există obiceiuri pentru acest filtru.
+    <transition-group name="fade" tag="ul" class="space-y-3">
+      <li
+        v-for="habit in habits"
+        :key="habit.id"
+        class="flex items-center justify-between p-4 rounded-2xl bg-white dark:bg-gray-800 shadow-md hover:shadow-lg transition duration-200"
+      >
+        <!-- Nume obicei -->
+        <span class="font-medium text-gray-900 dark:text-gray-100">
+          {{ habit.name }}
+        </span>
+
+        <div class="flex items-center space-x-3">
+          <!-- Buton marcare complet / necomplet -->
+          <button
+            @click="toggleCompletion(habit.id)"
+            class="px-3 py-1 rounded-xl text-sm font-semibold transition"
+            :class="isCompletedToday(habit)
+              ? 'bg-green-100 text-green-800 hover:bg-green-200 dark:bg-green-900 dark:text-green-200'
+              : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300'"
+          >
+            {{ isCompletedToday(habit) ? 'Done' : 'Mark' }}
+          </button>
+
+          <!-- Buton ștergere cu confirmare -->
+          <button
+            @click="confirmDelete(habit)"
+            class="p-2 rounded-xl hover:bg-red-100 dark:hover:bg-red-900 transition"
+            aria-label="Delete habit"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="w-5 h-5 text-red-500"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+        </div>
+      </li>
+    </transition-group>
+
+    <!-- Mesaj dacă nu există obiceiuri -->
+    <p v-if="habits.length === 0" class="text-gray-500 dark:text-gray-400">
+      No habits yet. Add one above!
     </p>
+
+    <!-- Modal simplu pentru confirmare ștergere -->
+    <div
+      v-if="habitToDelete"
+      class="fixed inset-0 flex items-center justify-center bg-black/40 z-50"
+    >
+      <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-xl w-full max-w-sm">
+        <h3 class="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">
+          Delete habit?
+        </h3>
+        <p class="text-gray-600 dark:text-gray-300 mb-6">
+          Are you sure you want to delete "{{ habitToDelete.name }}"? This action cannot be undone.
+        </p>
+        <div class="flex justify-end space-x-3">
+          <button
+            @click="habitToDelete = null"
+            class="px-4 py-2 rounded-xl bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition"
+          >
+            Cancel
+          </button>
+          <button
+            @click="deleteHabit(habitToDelete.id)"
+            class="px-4 py-2 rounded-xl bg-red-500 text-white hover:bg-red-600 transition"
+          >
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
-import { useHabitStore } from '@/stores/habitStore.js';
-import HabitItem from '@/components/HabitItem.vue';
+import { computed, ref } from "vue";
+import { useHabitStore } from "../habitStore";
 
-const habitStore = useHabitStore();
-const filter = ref('all');
+const store = useHabitStore();
+const habits = computed(() => store.habits);
 
-const filteredHabits = computed(() => {
-  if (filter.value === 'done') {
-    return habitStore.habits.filter(habit => habit.days.includes(habitStore.today));
-  } else if (filter.value === 'not-done') {
-    return habitStore.habits.filter(habit => !habit.days.includes(habitStore.today));
-  }
-  return habitStore.habits;
-});
+const habitToDelete = ref(null);
+
+const toggleCompletion = (id) => {
+  store.toggleCompletion(id);
+};
+
+const confirmDelete = (habit) => {
+  habitToDelete.value = habit;
+};
+
+const deleteHabit = (id) => {
+  store.removeHabit(id);
+  habitToDelete.value = null;
+};
+
+// funcția nouă din store, pentru a ști dacă e completat azi
+const isCompletedToday = store.isCompletedToday;
 </script>
+
+<style scoped>
+.fade-enter-active,
+.fade-leave-active {
+  transition: all 0.25s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+  transform: translateY(-6px);
+}
+</style>
