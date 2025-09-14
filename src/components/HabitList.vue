@@ -8,34 +8,34 @@
       <li
         v-for="habit in habits"
         :key="habit.id"
-        class="flex items-center justify-between p-4 rounded-2xl bg-white dark:bg-gray-800 shadow-md hover:shadow-lg transition duration-200"
+        class="flex items-center justify-between p-4 rounded-2xl bg-white dark:bg-gray-800 shadow-card hover:shadow-lg transition"
       >
-        <!-- Nume obicei -->
+        <!-- Nume habit -->
         <span class="font-medium text-gray-900 dark:text-gray-100">
           {{ habit.name }}
         </span>
 
         <div class="flex items-center space-x-3">
-          <!-- Buton marcare complet / necomplet -->
+          <!-- Buton Mark/Done -->
           <button
             @click="toggleCompletion(habit.id)"
-            class="px-3 py-1 rounded-xl text-sm font-semibold transition"
+            class="px-3 py-1 rounded-xl text-sm font-semibold shadow-card transition"
             :class="isCompletedToday(habit)
-              ? 'bg-green-100 text-green-800 hover:bg-green-200 dark:bg-green-900 dark:text-green-200'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300'"
+              ? 'bg-success text-white hover:bg-green-600'
+              : 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300'"
           >
             {{ isCompletedToday(habit) ? 'Done' : 'Mark' }}
           </button>
 
-          <!-- Buton ștergere cu confirmare -->
+          <!-- Buton ștergere -->
           <button
             @click="confirmDelete(habit)"
-            class="p-2 rounded-xl hover:bg-red-100 dark:hover:bg-red-900 transition"
+            class="p-2 rounded-xl hover:bg-danger/10 transition"
             aria-label="Delete habit"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              class="w-5 h-5 text-red-500"
+              class="w-5 h-5 text-danger"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -52,12 +52,11 @@
       </li>
     </transition-group>
 
-    <!-- Mesaj dacă nu există obiceiuri -->
     <p v-if="habits.length === 0" class="text-gray-500 dark:text-gray-400">
       No habits yet. Add one above!
     </p>
 
-    <!-- Modal simplu pentru confirmare ștergere -->
+    <!-- Modal confirmare ștergere -->
     <div
       v-if="habitToDelete"
       class="fixed inset-0 flex items-center justify-center bg-black/40 z-50"
@@ -78,7 +77,7 @@
           </button>
           <button
             @click="deleteHabit(habitToDelete.id)"
-            class="px-4 py-2 rounded-xl bg-red-500 text-white hover:bg-red-600 transition"
+            class="px-4 py-2 rounded-xl bg-danger text-white hover:bg-red-600 shadow-card transition"
           >
             Delete
           </button>
@@ -90,7 +89,7 @@
 
 <script setup>
 import { computed, ref } from "vue";
-import { useHabitStore } from "../habitStore";
+import { useHabitStore } from "@/habitStore.js";
 
 const store = useHabitStore();
 const habits = computed(() => store.habits);
@@ -110,7 +109,6 @@ const deleteHabit = (id) => {
   habitToDelete.value = null;
 };
 
-// funcția nouă din store, pentru a ști dacă e completat azi
 const isCompletedToday = store.isCompletedToday;
 </script>
 

@@ -1,0 +1,17 @@
+/* src/index.css */
+
+/* Tailwind CSS layers */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Font & Global Styles */
+html,
+body {
+    @apply bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100;
+    @apply min-h-screen antialiased;
+}
+
+button {
+    @apply focus:outline-none focus:ring-2 focus:ring-offset-2;
+}

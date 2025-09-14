@@ -12,7 +12,7 @@
           :class="[
             'px-3 py-1 rounded-xl text-sm font-medium transition',
             viewMode === 'daily'
-              ? 'bg-indigo-600 text-white'
+              ? 'bg-primary text-white shadow-card'
               : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
           ]"
         >
@@ -23,7 +23,7 @@
           :class="[
             'px-3 py-1 rounded-xl text-sm font-medium transition',
             viewMode === 'weekly'
-              ? 'bg-indigo-600 text-white'
+              ? 'bg-primary text-white shadow-card'
               : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
           ]"
         >
@@ -32,7 +32,7 @@
       </div>
     </div>
 
-    <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-md">
+    <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-card">
       <BarChart v-if="chartData" :data="chartData" :options="chartOptions" />
       <p v-else class="text-gray-500 dark:text-gray-400 text-center">
         No data yet. Add habits to see your progress!
@@ -43,7 +43,7 @@
 
 <script setup>
 import { computed, ref } from "vue";
-import { useHabitStore } from "../habitStore";
+import { useHabitStore } from "@/habitStore.js";
 import {
   Chart as ChartJS,
   Title,
@@ -60,8 +60,6 @@ ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
 const store = useHabitStore();
 const viewMode = ref("daily");
 
-// Exemplu simplu: în store, fiecare habit ar trebui să aibă un istoric completări
-// ex: habit.history = [{ date: '2025-09-14', completed: true }, ...]
 const chartData = computed(() => {
   if (!store.habits.length) return null;
 
@@ -71,8 +69,8 @@ const chartData = computed(() => {
       datasets: [
         {
           label: "Completed Today",
-          data: store.habits.map((h) => (h.completed ? 1 : 0)),
-          backgroundColor: "#4F46E5",
+          data: store.habits.map((h) => (store.isCompletedToday(h) ? 1 : 0)),
+          backgroundColor: getCssVarColor("--color-primary"),
           borderRadius: 8,
         },
       ],
@@ -80,26 +78,39 @@ const chartData = computed(() => {
   }
 
   if (viewMode.value === "weekly") {
-    // Generăm datele pentru ultimele 7 zile
     const last7Days = Array.from({ length: 7 }).map((_, i) => {
       const d = new Date();
       d.setDate(d.getDate() - (6 - i));
-      return d.toISOString().split("T")[0]; // format YYYY-MM-DD
+      return d.toISOString().split("T")[0];
     });
 
     return {
-      labels: last7Days.map((d) => d.slice(5)), // arătăm doar MM-DD
+      labels: last7Days.map((d) => d.slice(5)),
       datasets: store.habits.map((h, index) => ({
         label: h.name,
         data: last7Days.map((day) =>
           h.history ? h.history.filter((x) => x.date === day && x.completed).length : 0
         ),
-        backgroundColor: colorForIndex(index),
+        backgroundColor: colorPalette[index % colorPalette.length],
         borderRadius: 6,
       })),
     };
   }
 });
+
+// Generăm culori folosind variabile CSS (legate de Tailwind)
+function getCssVarColor(variable) {
+  return getComputedStyle(document.documentElement).getPropertyValue(variable) || "#4F46E5";
+}
+
+const colorPalette = [
+  "#4F46E5", // primary
+  "#06B6D4", // secondary
+  "#22C55E", // success
+  "#F59E0B", // warning
+  "#EF4444", // danger
+  "#8B5CF6", // violet accent
+];
 
 const chartOptions = {
   responsive: true,
@@ -139,12 +150,6 @@ const chartOptions = {
     },
   },
 };
-
-// Funcție simplă pentru a genera culori diferite
-function colorForIndex(index) {
-  const colors = ["#4F46E5", "#10B981", "#F59E0B", "#EF4444", "#3B82F6", "#8B5CF6"];
-  return colors[index % colors.length];
-}
 </script>
 
 <style scoped>

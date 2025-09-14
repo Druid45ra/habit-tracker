@@ -12,15 +12,15 @@
         id="habitName"
         type="text"
         placeholder="e.g. Drink water, Read 10 pages..."
-        class="w-full rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-2 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition"
-        :class="error ? 'border-red-500 focus:ring-red-400' : ''"
+        class="w-full rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-2 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:ring-2 focus:ring-primary focus:border-primary outline-none transition"
+        :class="error ? 'border-danger focus:ring-danger' : ''"
       />
-      <p v-if="error" class="mt-1 text-sm text-red-500">{{ error }}</p>
+      <p v-if="error" class="mt-1 text-sm text-danger">{{ error }}</p>
     </div>
 
     <button
       type="submit"
-      class="w-full px-4 py-2 rounded-xl bg-indigo-600 text-white font-semibold hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-400 transition disabled:opacity-50 disabled:cursor-not-allowed"
+      class="w-full px-4 py-2 rounded-xl bg-primary hover:bg-primary-dark text-white font-semibold shadow-card focus:ring-2 focus:ring-primary transition disabled:opacity-50 disabled:cursor-not-allowed"
       :disabled="isDisabled"
     >
       ➕ Add Habit
@@ -30,7 +30,7 @@
 
 <script setup>
 import { ref, computed } from "vue";
-import { useHabitStore } from "../habitStore";
+import { useHabitStore } from "@/habitStore.js";
 
 const store = useHabitStore();
 const newHabit = ref("");
